@@ -1,3 +1,5 @@
+https://helloworld-a2a-agent.azurewebsites.net/.well-known/agent-card.json
+
 Create Prompt Agent From UI
 
 ![alt text](image-1.png)
