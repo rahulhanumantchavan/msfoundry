@@ -1,3 +1,6 @@
+Skill DIscovery:
+https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/toolbox?pivots=python#validate-skill-discovery
+
 https://helloworld-a2a-agent.azurewebsites.net/.well-known/agent-card.json
 
 Create Prompt Agent From UI
