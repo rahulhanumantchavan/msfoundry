@@ -1,0 +1,29 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: guid-injector-webhook
+webhooks:
+  - name: guid-injector.example.com
+    clientConfig:
+      service:
+        name: guid-injector-svc
+        namespace: webhook-system
+        path: "/mutate"
+      # Replace this with your actual base64 encoded CA bundle
+      caBundle: "$caBundle"
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    # If the webhook fails/is down, Ignore means pods will still deploy (without the env var)
+    # Change to "Fail" if the GUID is strictly mandatory for the app to function.
+    failurePolicy: Ignore 
+    # This ensures the webhook triggers for ALL namespaces EXCEPT the system ones
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: ["kube-system", "kube-public", "kube-node-lease", "webhook-system"]
+    sideEffects: None
+    admissionReviewVersions: ["v1", "v1beta1"]
