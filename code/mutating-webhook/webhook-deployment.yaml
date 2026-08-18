@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guid-injector
+  namespace: webhook-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guid-injector
+  template:
+    metadata:
+      labels:
+        app: guid-injector
+    spec:
+      containers:
+      - name: injector
+        image: enclave.azurecr.io/guid-injector:v2
+        ports:
+        - containerPort: 8443
+        volumeMounts:
+        - name: certs
+          mountPath: "/certs"
+          readOnly: true
+      volumes:
+      - name: certs
+        secret:
+          secretName: guid-injector-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guid-injector-svc
+  namespace: webhook-system
+spec:
+  ports:
+  - port: 443
+    targetPort: 8443
+  selector:
+    app: guid-injector
