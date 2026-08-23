@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agent-operator-system
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+    # The operator's own namespace must NOT be agent-enabled, otherwise the
+    # webhook would gate its own pods and deadlock on restart.
+    agent-enabled: "false"
+    # Belt and braces: never let the webhook intercept its own namespace.
+    control-plane: agent-identity-operator

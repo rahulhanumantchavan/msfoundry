@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-identity-operator-webhook
+  namespace: agent-operator-system
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+spec:
+  selector:
+    app.kubernetes.io/name: agent-identity-operator
+  ports:
+    - name: https
+      port: 443
+      targetPort: webhook
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-identity-operator
+  namespace: agent-operator-system
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+spec:
+  # Two replicas so a node drain never leaves the failurePolicy=Fail webhook
+  # without a backend, which would block all agent pod creation.
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-identity-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agent-identity-operator
+    spec:
+      serviceAccountName: agent-identity-operator
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: agent-identity-operator
+      containers:
+        - name: operator
+          image: enclave.azurecr.io/agent-identity-operator:v0.1.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - --metrics-bind-address=:8080
+            - --health-probe-bind-address=:8081
+            - --webhook-port=9443
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: BLUEPRINT_API_URL
+              value: "https://jsonplaceholder.typicode.com/posts"
+            - name: BLUEPRINT_API_TIMEOUT
+              value: "5s"
+            - name: BLUEPRINT_API_ATTEMPTS
+              value: "3"
+            - name: ENFORCE_NAMESPACE_SERVICE_ACCOUNT
+              value: "true"
+            - name: ENABLE_CERT_BOOTSTRAP
+              value: "true"
+            - name: WEBHOOK_SERVICE_NAME
+              value: agent-identity-operator-webhook
+            - name: WEBHOOK_SECRET_NAME
+              value: agent-identity-operator-webhook-cert
+            - name: WEBHOOK_CONFIG_NAME
+              value: agent-identity-operator-mutating-webhook
+          ports:
+            - name: webhook
+              containerPort: 9443
+              protocol: TCP
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: health
+              containerPort: 8081
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: serving-certs
+              mountPath: /tmp/k8s-webhook-server/serving-certs
+      volumes:
+        # emptyDir, not the Secret: the operator writes the generated cert here
+        # itself, which avoids a chicken-and-egg dependency on first install.
+        - name: serving-certs
+          emptyDir: {}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: agent-identity-operator
+  namespace: agent-operator-system
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-identity-operator

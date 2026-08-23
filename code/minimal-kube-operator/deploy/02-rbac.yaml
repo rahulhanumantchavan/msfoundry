@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-identity-operator
+  namespace: agent-operator-system
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+---
+# Cluster-wide read access is required because the webhook resolves the
+# agent.blueprint/id annotation by walking Pod -> ReplicaSet -> Deployment in
+# any agent-enabled namespace, and reads namespace labels to enforce scope.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: agent-identity-operator
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces", "serviceaccounts"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  # Required to publish the generated caBundle onto its own webhook config.
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+    resourceNames: ["agent-identity-operator-mutating-webhook"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: agent-identity-operator
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: agent-identity-operator
+subjects:
+  - kind: ServiceAccount
+    name: agent-identity-operator
+    namespace: agent-operator-system
+---
+# The serving certificate Secret lives in the operator namespace only.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-identity-operator
+  namespace: agent-operator-system
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: agent-identity-operator
+  namespace: agent-operator-system
+  labels:
+    app.kubernetes.io/name: agent-identity-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: agent-identity-operator
+subjects:
+  - kind: ServiceAccount
+    name: agent-identity-operator
+    namespace: agent-operator-system

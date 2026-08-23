@@ -1,0 +1,6 @@
+.git
+.gitignore
+deploy/
+examples/
+docs/
+*.md
