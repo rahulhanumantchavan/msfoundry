@@ -1,0 +1,7 @@
+# Activate venv (PowerShell)
+.\.venv\Scripts\Activate.ps1
+$env:PYTHONPATH = Convert-Path .
+$env:HERMES_MODEL = "gpt-4.1"
+$env:AZURE_OPENAI_ENDPOINT = "https://<your-endpoint>.openai.azure.com/openai/v1"
+$env:AZURE_OPENAI_API_KEY = "YOUR_KEY_HERE"
+python .\examples\python_library_example.py
