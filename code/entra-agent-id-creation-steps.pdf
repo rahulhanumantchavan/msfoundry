@@ -1,0 +1,370 @@
+OIDC Issuer: https://westeurope.oic.prod-aks.azure.com/ea380bf2-1834-45c0-a448-4ae8d224f127/6926a382-905d-4c92-87de-3c79ba997d75/
+
+#Create Kubernetes Namespace
+kubectl create ns entra-agent-poc
+
+#Create Kubernetes service account
+kubectl create serviceaccount sa-entra-agent-poc --namespace entra-agent-poc
+
+system:serviceaccount:<namespace>:<service-account-name>
+
+system:serviceaccount:entra-agent-poc:sa-entra-agent-poc
+
+#Get Token for Graph API to create blueprint
+Connect-MgGraph -Scopes "AgentIdentityBlueprint.Create", "AgentIdentityBlueprint.AddRemoveCreds.All", "AgentIdentityBlueprint.UpdateAuthProperties.All", "AgentIdentityBlueprintPrincipal.Create", "User.Read" -TenantId ea380bf2-1834-45c0-a448-4ae8d224f127
+Get-MgContext
+$response = Invoke-MgGraphRequest -Uri "https://graph.microsoft.com/v1.0/me" -Method GET -OutputType HttpResponseMessage
+$token = $response.RequestMessage.Headers.Authorization.Parameter
+$token
+
+
+#Create Blueprint:
+curl --location 'https://graph.microsoft.com/v1.0/applications/' \
+--header 'Content-Type: application/json' \
+--header 'OData-Version: 4.0' \
+--header 'Authorization: <Graph-Token>' \
+--data-raw '{
+  "@odata.type": "Microsoft.Graph.AgentIdentityBlueprint",
+  "displayName": "Entra Agent Identity Blueprint1",
+  "sponsors@odata.bind": [
+    "https://graph.microsoft.com/v1.0/users/3f534f99-77eb-4133-9b9f-8cdd8a820e56"
+  ],
+  "owners@odata.bind": [
+    "https://graph.microsoft.com/v1.0/users/3f534f99-77eb-4133-9b9f-8cdd8a820e56"
+  ]
+}'
+
+#Create Blueprint Response:
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#applications/$entity",
+    "@odata.type": "#microsoft.graph.agentIdentityBlueprint",
+    "id": "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c",
+    "deletedDateTime": null,
+    "appId": "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c",
+    "applicationTemplateId": null,
+    "disabledByMicrosoftStatus": null,
+    "createdByAppId": "14d82eec-204b-4c2f-b7e8-296a70dab67e",
+    "createdDateTime": "2026-08-26T13:00:56.8567425Z",
+    "displayName": "Entra Agent Identity Blueprint1",
+    "description": null,
+    "groupMembershipClaims": null,
+    "identifierUris": [],
+    "isDeviceOnlyAuthSupported": null,
+    "isDisabled": null,
+    "isFallbackPublicClient": null,
+    "nativeAuthenticationApisEnabled": null,
+    "notes": null,
+    "publisherDomain": "crunchyeu.onmicrosoft.com",
+    "serviceManagementReference": null,
+    "signInAudience": "AzureADMyOrg",
+    "tags": [],
+    "tokenEncryptionKeyId": null,
+    "uniqueName": null,
+    "samlMetadataUrl": null,
+    "defaultRedirectUri": null,
+    "certification": null,
+    "optionalClaims": null,
+    "requestSignatureVerification": null,
+    "addIns": [],
+    "api": {
+        "acceptMappedClaims": null,
+        "knownClientApplications": [],
+        "requestedAccessTokenVersion": 2,
+        "oauth2PermissionScopes": [],
+        "preAuthorizedApplications": []
+    },
+    "appRoles": [],
+    "info": {
+        "logoUrl": null,
+        "marketingUrl": null,
+        "privacyStatementUrl": null,
+        "supportUrl": null,
+        "termsOfServiceUrl": null
+    },
+    "keyCredentials": [],
+    "parentalControlSettings": {
+        "countriesBlockedForMinors": [],
+        "legalAgeGroupRule": "Allow"
+    },
+    "passwordCredentials": [],
+    "publicClient": {
+        "redirectUris": []
+    },
+    "requiredResourceAccess": [],
+    "verifiedPublisher": {
+        "displayName": null,
+        "verifiedPublisherId": null,
+        "addedDateTime": null
+    },
+    "web": {
+        "homePageUrl": null,
+        "logoutUrl": null,
+        "redirectUris": [],
+        "implicitGrantSettings": {
+            "enableAccessTokenIssuance": false,
+            "enableIdTokenIssuance": false
+        },
+        "redirectUriSettings": []
+    },
+    "servicePrincipalLockConfiguration": {
+        "isEnabled": true,
+        "allProperties": true,
+        "credentialsWithUsageVerify": null,
+        "credentialsWithUsageSign": null,
+        "identifierUris": null,
+        "tokenEncryptionKeyId": null
+    },
+    "spa": {
+        "redirectUris": []
+    }
+}
+
+# Create Federated Identity Credentials for Blueprint:
+curl --location 'https://graph.microsoft.com/v1.0/applications/d6eaf1c9-4712-4014-9cc2-a2f2bf53548c/federatedIdentityCredentials' \
+--header 'Content-Type: application/json' \
+--header 'OData-Version: 4.0' \
+--header 'Authorization: Bearer <Graph-Token>' \
+--data '{
+    "name": "sa-entra-agent-poc-",
+    "issuer": "https://westeurope.oic.prod-aks.azure.com/ea380bf2-1834-45c0-a448-4ae8d224f127/6926a382-905d-4c92-87de-3c79ba997d75/",
+    "subject": "system:serviceaccount:entra-agent-poc:sa-entra-agent-poc",
+    "audiences": [
+        "api://AzureADTokenExchange"
+    ]
+}'
+
+# Create Federated Identity Credentials for Blueprint-Response:
+{
+    "name": "sa-entra-agent-poc-",
+    "issuer": "https://westeurope.oic.prod-aks.azure.com/ea380bf2-1834-45c0-a448-4ae8d224f127/6926a382-905d-4c92-87de-3c79ba997d75/",
+    "subject": "system:serviceaccount:entra-agent-poc:sa-entra-agent-poc",
+    "audiences": [
+        "api://AzureADTokenExchange"
+    ]
+}
+
+#Configure identifier URI and scope:
+curl --location --request PATCH 'https://graph.microsoft.com/v1.0/applications/d6eaf1c9-4712-4014-9cc2-a2f2bf53548c' \
+--header 'Content-Type: application/json' \
+--header 'OData-Version: 4.0' \
+--header 'Authorization: Bearer <Graph-Token>' \
+--data '{
+    "identifierUris": ["api://d6eaf1c9-4712-4014-9cc2-a2f2bf53548c"],
+    "api": {
+      "oauth2PermissionScopes": [
+        {
+          "adminConsentDescription": "Allow the application to access the agent on behalf of the signed-in user.",
+          "adminConsentDisplayName": "Access agent",
+          "id": "69397073-b077-4cec-8a88-87dd761acd97",
+          "isEnabled": true,
+          "type": "User",
+          "value": "access_agent"
+        }
+      ]
+  }
+}'
+
+#Configure identifier URI and scope - Response:
+{
+    "identifierUris": ["api://d6eaf1c9-4712-4014-9cc2-a2f2bf53548c"],
+    "api": {
+      "oauth2PermissionScopes": [
+        {
+          "adminConsentDescription": "Allow the application to access the agent on behalf of the signed-in user.",
+          "adminConsentDisplayName": "Access agent",
+          "id": "69397073-b077-4cec-8a88-87dd761acd97",
+          "isEnabled": true,
+          "type": "User",
+          "value": "access_agent"
+        }
+      ]
+  }
+}
+
+#Create an agent blueprint principal
+curl --location 'https://graph.microsoft.com/v1.0/serviceprincipals/microsoft.graph.agentIdentityBlueprintPrincipal' \
+--header 'Content-Type: application/json' \
+--header 'OData-Version: 4.0' \
+--header 'Authorization: ••••••' \
+--data '{
+  "appId": "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c"
+}'
+
+#Create an agent blueprint principal-Response:
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#servicePrincipals/microsoft.graph.agentIdentityBlueprintPrincipal/$entity",
+    "id": "341c771b-ade7-497f-94ab-e40700b175d6",
+    "deletedDateTime": null,
+    "accountEnabled": true,
+    "alternativeNames": [],
+    "appDisplayName": "Entra Agent Identity Blueprint1",
+    "appDescription": null,
+    "appId": "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c",
+    "applicationTemplateId": null,
+    "appOwnerOrganizationId": "ea380bf2-1834-45c0-a448-4ae8d224f127",
+    "appRoleAssignmentRequired": false,
+    "createdByAppId": "14d82eec-204b-4c2f-b7e8-296a70dab67e",
+    "createdDateTime": "2026-08-26T16:58:23Z",
+    "description": null,
+    "disabledByMicrosoftStatus": null,
+    "displayName": "Entra Agent Identity Blueprint1",
+    "homepage": null,
+    "isDisabled": null,
+    "loginUrl": null,
+    "logoutUrl": null,
+    "notes": null,
+    "notificationEmailAddresses": [],
+    "preferredSingleSignOnMode": null,
+    "preferredTokenSigningKeyThumbprint": null,
+    "replyUrls": [],
+    "servicePrincipalNames": [
+        "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c",
+        "api://d6eaf1c9-4712-4014-9cc2-a2f2bf53548c"
+    ],
+    "servicePrincipalType": "Application",
+    "signInAudience": "AzureADMyOrg",
+    "tags": [],
+    "tokenEncryptionKeyId": null,
+    "samlSingleSignOnSettings": null,
+    "addIns": [],
+    "appRoles": [],
+    "info": {
+        "logoUrl": null,
+        "marketingUrl": null,
+        "privacyStatementUrl": null,
+        "supportUrl": null,
+        "termsOfServiceUrl": null
+    },
+    "keyCredentials": [],
+    "oauth2PermissionScopes": [
+        {
+            "adminConsentDescription": "Allow the application to access the agent on behalf of the signed-in user.",
+            "adminConsentDisplayName": "Access agent",
+            "id": "69397073-b077-4cec-8a88-87dd761acd97",
+            "isEnabled": true,
+            "type": "User",
+            "userConsentDescription": null,
+            "userConsentDisplayName": null,
+            "value": "access_agent"
+        }
+    ],
+    "passwordCredentials": [],
+    "resourceSpecificApplicationPermissions": [],
+    "verifiedPublisher": {
+        "displayName": null,
+        "verifiedPublisherId": null,
+        "addedDateTime": null
+    }
+}
+
+#Create Kubernetes Service Account Token
+kubectl create token <SERVICE_ACCOUNT_NAME> \
+  --namespace <NAMESPACE> \
+  --audience "<CLOUD_PROVIDER_AUDIENCE>" \
+  --duration 3600s
+  
+kubectl create token sa-entra-agent-poc \
+  --namespace entra-agent-poc \
+  --audience "api://AzureADTokenExchange" \
+  --duration 3600s
+
+#Get Blueprint Token:
+curl --location 'https://login.microsoftonline.com/ea380bf2-1834-45c0-a448-4ae8d224f127/oauth2/v2.0/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--header 'Cookie: fpc=Am3upAeOLlREr0ak_DpEeUjOYbXbAQAAAGISIeIOAAAA; stsservicecookie=estsfd; x-ms-gateway-slice=estsfd' \
+--data-urlencode 'client_id=d6eaf1c9-4712-4014-9cc2-a2f2bf53548c' \
+--data-urlencode 'scope=https://graph.microsoft.com/.default' \
+--data-urlencode 'client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer' \
+--data-urlencode 'grant_type=client_credentials' \
+--data-urlencode 'client_assertion=<Kubernetes-Service-Account-Token>'
+
+#Get Blueprint Token-Response:
+{
+    "token_type": "Bearer",
+    "expires_in": 3599,
+    "ext_expires_in": 3599,
+    "access_token": "<Blueprint-Token>"
+}  
+
+#Create the agent identity
+curl --location 'https://graph.microsoft.com/beta/servicePrincipals/Microsoft.Graph.AgentIdentity' \
+--header 'Content-Type: application/json' \
+--header 'OData-Version: 4.0' \
+--header 'Authorization: Bearer <Blueprint-Token>' \
+--data-raw '{
+  "displayName": "Entra Agent Identity 1",
+  "agentIdentityBlueprintId": "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c",
+  "sponsors@odata.bind": [
+    "https://graph.microsoft.com/v1.0/users/3f534f99-77eb-4133-9b9f-8cdd8a820e56"
+  ]
+}'
+
+#Create the agent identity-Response:
+{
+    "@odata.context": "https://graph.microsoft.com/beta/$metadata#servicePrincipals/microsoft.graph.agentIdentity/$entity",
+    "id": "7f3bf831-41c4-4cb0-9d96-3fb6bb031421",
+    "deletedDateTime": null,
+    "accountEnabled": true,
+    "alternativeNames": [],
+    "createdByAppId": "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c",
+    "createdDateTime": "2026-08-26T16:59:34Z",
+    "deviceManagementAppType": null,
+    "appDescription": null,
+    "appDisplayName": null,
+    "appId": "7f3bf831-41c4-4cb0-9d96-3fb6bb031421",
+    "applicationTemplateId": null,
+    "appOwnerOrganizationId": null,
+    "appRoleAssignmentRequired": false,
+    "assignmentRequiredForPrincipalTypes": null,
+    "description": null,
+    "disabledByMicrosoftStatus": null,
+    "displayName": "Entra Agent Identity 1",
+    "errorUrl": null,
+    "homepage": null,
+    "isAuthorizationServiceEnabled": false,
+    "isDisabled": null,
+    "isHardDeleteProtectionEnabled": null,
+    "isManagementRestricted": null,
+    "loginUrl": null,
+    "logoutUrl": null,
+    "notes": null,
+    "notificationEmailAddresses": [],
+    "preferredSingleSignOnMode": null,
+    "preferredTokenSigningKeyEndDateTime": null,
+    "preferredTokenSigningKeyThumbprint": null,
+    "publisherName": null,
+    "replyUrls": [],
+    "samlMetadataUrl": null,
+    "samlSLOBindingType": "httpRedirect",
+    "servicePrincipalNames": [
+        "7f3bf831-41c4-4cb0-9d96-3fb6bb031421"
+    ],
+    "servicePrincipalType": "ServiceIdentity",
+    "signInAudience": null,
+    "tags": [],
+    "tokenEncryptionKeyId": null,
+    "agentAppId": "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c",
+    "agentIdentityBlueprintId": "d6eaf1c9-4712-4014-9cc2-a2f2bf53548c",
+    "instanceMode": "multiInstance",
+    "lifecyclePolicyComplianceState": null,
+    "lifecyclePolicyComplianceStateReason": null,
+    "lifecyclePolicyComplianceStateLastModifiedDateTime": null,
+    "lifecyclePolicyNonComplianceDisablementDateTime": null,
+    "certification": null,
+    "info": null,
+    "samlSingleSignOnSettings": null,
+    "addIns": [],
+    "api": {
+        "resourceSpecificApplicationPermissions": []
+    },
+    "appRoles": [],
+    "keyCredentials": [],
+    "publishedPermissionScopes": [],
+    "passwordCredentials": [],
+    "resourceSpecificApplicationPermissions": [],
+    "verifiedPublisher": {
+        "displayName": null,
+        "verifiedPublisherId": null,
+        "addedDateTime": null
+    }
+}
