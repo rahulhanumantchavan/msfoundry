@@ -1,0 +1,5 @@
+#Delete Entra Agent Identity
+curl --location --request DELETE 'https://graph.microsoft.com/beta/servicePrincipals/859124b7-db74-4657-85f5-f09542b05ba5' \
+--header 'Content-Type: application/json' \
+--header 'OData-Version: 4.0' \
+--header 'Authorization: Bearer <Blueprint-Token>'
