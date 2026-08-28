@@ -1,0 +1,84 @@
+# ---------------------------------------------------------------------------
+# The operator itself: namespace + its own ServiceAccount.
+# Deployed FIRST, before any agent namespace exists.
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agent-operator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-operator
+  namespace: agent-operator
+---
+# ---------------------------------------------------------------------------
+# THE KEY PIECE.
+#
+# "serviceaccounts/token" is a *subresource* of ServiceAccount.
+# Granting CREATE on it = permission to call the TokenRequest API:
+#     POST /api/v1/namespaces/{ns}/serviceaccounts/{sa}/token
+#
+# Because this is a ClusterRole bound with a ClusterRoleBinding, it applies to
+# ALL namespaces - including namespaces that do not exist yet.
+# That is what makes "no additional changes later" possible.
+# ---------------------------------------------------------------------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: agent-operator-token-minter
+rules:
+  # Mint tokens for any ServiceAccount in any namespace.
+  - apiGroups: [""]
+    resources: ["serviceaccounts/token"]
+    verbs: ["create"]
+  # Optional: let the operator discover/verify SAs and namespaces exist.
+  - apiGroups: [""]
+    resources: ["serviceaccounts", "namespaces"]
+    verbs: ["get", "list", "watch"]
+  # Optional: lets the operator validate a token it just minted.
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: agent-operator-token-minter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: agent-operator-token-minter
+subjects:
+  - kind: ServiceAccount
+    name: agent-operator
+    namespace: agent-operator
+---
+# ---------------------------------------------------------------------------
+# Stand-in for the operator process.
+# Because serviceAccountName is set, the kubelet auto-mounts:
+#   /var/run/secrets/kubernetes.io/serviceaccount/token      <- operator identity
+#   /var/run/secrets/kubernetes.io/serviceaccount/ca.crt     <- API server CA
+#   /var/run/secrets/kubernetes.io/serviceaccount/namespace
+# We use plain curl to show TokenRequest is just a REST POST - exactly what
+# client-go's CoreV1().ServiceAccounts(ns).CreateToken(...) does under the hood.
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: operator-shell
+  namespace: agent-operator
+spec:
+  serviceAccountName: agent-operator
+  containers:
+    - name: shell
+      image: curlimages/curl:8.11.1
+      command: ["sleep", "infinity"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        runAsUser: 65532
+        capabilities:
+          drop: ["ALL"]
+  restartPolicy: Never
