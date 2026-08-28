@@ -1,0 +1,16 @@
+# ---------------------------------------------------------------------------
+# An "agent" namespace + its ServiceAccount.
+# Deployed LATER, long after the operator is running.
+# Note: there is NO RoleBinding here for the operator. Nothing operator-related
+# at all. The ClusterRoleBinding from 01-operator.yaml already covers it.
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: entra-agent-poc
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sa-entra-agent-poc
+  namespace: entra-agent-poc

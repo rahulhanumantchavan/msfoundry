@@ -1,0 +1,14 @@
+# ---------------------------------------------------------------------------
+# Created LONG AFTER the operator was deployed, to prove the operator needs
+# zero additional RBAC changes for brand-new namespaces.
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: late-agent-poc
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sa-late-agent-poc
+  namespace: late-agent-poc
