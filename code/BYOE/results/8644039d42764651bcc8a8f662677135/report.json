@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "gate_passed": true,
+  "case_count": 3,
+  "evaluation_file": "evaluation.json",
+  "manifest_file": "manifest.json"
+}

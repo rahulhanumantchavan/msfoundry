@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "gate_passed": true,
+  "missing_pass_fail_coverage": [],
+  "fixtures": [
+    {
+      "evaluator_id": "contains",
+      "case_id": "contains-pass",
+      "matched": true,
+      "result": {
+        "score": 1,
+        "passed": 1,
+        "valid": 1,
+        "reason": "All terms found.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "contains",
+      "case_id": "contains-fail",
+      "matched": true,
+      "result": {
+        "score": 0,
+        "passed": 0,
+        "valid": 1,
+        "reason": "Missing terms.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "contains",
+      "case_id": "contains-invalid",
+      "matched": true,
+      "result": {
+        "score": 0,
+        "passed": 0,
+        "valid": 0,
+        "reason": "Evaluator did not return a valid result.",
+        "error_code": "invalid_result"
+      }
+    },
+    {
+      "evaluator_id": "cli",
+      "case_id": "cli-pass",
+      "matched": true,
+      "result": {
+        "score": 1,
+        "passed": 1,
+        "valid": 1,
+        "reason": "All terms found.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "cli",
+      "case_id": "cli-fail",
+      "matched": true,
+      "result": {
+        "score": 0,
+        "passed": 0,
+        "valid": 1,
+        "reason": "Missing terms.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "cli",
+      "case_id": "cli-invalid",
+      "matched": true,
+      "result": {
+        "score": 0,
+        "passed": 0,
+        "valid": 0,
+        "reason": "Evaluator did not return a valid result.",
+        "error_code": "invalid_result"
+      }
+    }
+  ]
+}

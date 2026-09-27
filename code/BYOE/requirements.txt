@@ -1,0 +1,17 @@
+# Matches the tested SDK adapter compatibility set; explicit preview pins are intentional.
+agent-framework-core==1.0.0rc3
+agent-framework-azure-ai==1.0.0rc3
+azure-ai-agents==1.2.0b5
+azure-ai-projects==2.0.0b4
+azure-ai-agentserver-agentframework==1.0.0b17
+azure-ai-agentserver-core==1.0.0b17
+azure-ai-evaluation==1.18.6
+azure-identity==1.25.3
+openai==3.19.2
+httpx==0.28.1
+httpx2==2.13.1
+pydantic==2.14.0b2
+uvicorn==0.53.0
+debugpy==1.8.22
+pytest==9.1.1
+ruff==0.16.9

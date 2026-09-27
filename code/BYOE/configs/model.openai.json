@@ -1,0 +1,6 @@
+{
+    "kind": "openai_chat",
+    "endpoint_env": "BYOE_MODEL_CHAT_URL",
+    "model_env": "BYOE_MODEL_NAME",
+    "token_env": "BYOE_MODEL_API_KEY"
+}

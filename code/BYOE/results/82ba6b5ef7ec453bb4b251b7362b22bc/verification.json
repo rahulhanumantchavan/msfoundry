@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "gate_passed": true,
+  "missing_pass_fail_coverage": [],
+  "fixtures": [
+    {
+      "evaluator_id": "contains",
+      "case_id": "contains-pass",
+      "matched": true,
+      "result": {
+        "score": 1,
+        "passed": 1,
+        "valid": 1,
+        "reason": "All terms found.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "contains",
+      "case_id": "contains-fail",
+      "matched": true,
+      "result": {
+        "score": 0,
+        "passed": 0,
+        "valid": 1,
+        "reason": "Missing terms.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "cli",
+      "case_id": "cli-pass",
+      "matched": true,
+      "result": {
+        "score": 1,
+        "passed": 1,
+        "valid": 1,
+        "reason": "All terms found.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "cli",
+      "case_id": "cli-fail",
+      "matched": true,
+      "result": {
+        "score": 0,
+        "passed": 0,
+        "valid": 1,
+        "reason": "Missing terms.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "http",
+      "case_id": "http-pass",
+      "matched": true,
+      "result": {
+        "score": 1,
+        "passed": 1,
+        "valid": 1,
+        "reason": "All terms found.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "http",
+      "case_id": "http-fail",
+      "matched": true,
+      "result": {
+        "score": 0,
+        "passed": 0,
+        "valid": 1,
+        "reason": "Missing terms.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "llm",
+      "case_id": "llm-pass",
+      "matched": true,
+      "result": {
+        "score": 1,
+        "passed": 1,
+        "valid": 1,
+        "reason": "All terms found.",
+        "error_code": ""
+      }
+    },
+    {
+      "evaluator_id": "llm",
+      "case_id": "llm-fail",
+      "matched": true,
+      "result": {
+        "score": 0,
+        "passed": 0,
+        "valid": 1,
+        "reason": "Missing terms.",
+        "error_code": ""
+      }
+    }
+  ]
+}

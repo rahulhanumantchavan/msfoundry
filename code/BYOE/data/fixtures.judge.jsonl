@@ -1,0 +1,2 @@
+{"evaluator_id":"llm","case":{"schema_version":"1.0","id":"judge-pass","query":"Return exactly: hello","response":"hello","context":{},"expected":{"contains":["hello"],"response":"hello"},"metadata":{"synthetic":true}},"expect_valid":true,"expect_pass":true}
+{"evaluator_id":"llm","case":{"schema_version":"1.0","id":"judge-fail","query":"Return exactly: hello","response":"goodbye","context":{},"expected":{"contains":["hello"],"response":"hello"},"metadata":{"synthetic":true}},"expect_valid":true,"expect_pass":false}

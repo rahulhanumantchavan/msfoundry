@@ -1,0 +1,3 @@
+{"schema_version": "1.0", "id": "hello", "query": "Return exactly: hello", "response": "hello", "context": {}, "expected": {"contains": ["hello"], "response": "hello"}, "metadata": {"synthetic": true, "source": "explicit-offline-demo"}}
+{"schema_version": "1.0", "id": "hello-world", "query": "Return exactly: hello world", "response": "hello world", "context": {}, "expected": {"contains": ["hello", "world"], "response": "hello world"}, "metadata": {"synthetic": true, "source": "explicit-offline-demo"}}
+{"schema_version": "1.0", "id": "hello-again", "query": "Return exactly: hello again", "response": "hello again", "context": {}, "expected": {"contains": ["hello", "again"], "response": "hello again"}, "metadata": {"synthetic": true, "source": "explicit-offline-demo"}}

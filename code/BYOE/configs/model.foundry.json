@@ -1,0 +1,5 @@
+{
+    "kind": "foundry_model",
+    "endpoint_env": "BYOE_MODEL_PROJECT_ENDPOINT",
+    "model_env": "BYOE_MODEL_NAME"
+}

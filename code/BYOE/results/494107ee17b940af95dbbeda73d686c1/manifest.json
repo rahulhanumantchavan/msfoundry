@@ -1,0 +1,19 @@
+{
+  "suite_sha256": "0fed781f04dec3ec740391478f5bc8239957f3bb7d01f105b0f494ada67aca20",
+  "dataset_sha256": "ca7732f181c8701e0d580567163b9dec5237c03eb190423b2c664eb159f9125e",
+  "schema_version": "1.0",
+  "byoe_version": "0.1.0",
+  "python_version": "3.13.5",
+  "sdk_version": "1.18.6",
+  "evaluator_ids": [
+    "contains",
+    "cli",
+    "http",
+    "llm"
+  ],
+  "target_kind": "saved",
+  "collected": false,
+  "case_count": 3,
+  "result_count": 3,
+  "gate_passed": true
+}
